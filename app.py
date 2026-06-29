@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_mysqldb import MySQL
+from dotenv import load_dotenv
 import uuid, os, json
+
+load_dotenv()  # Load variables from .env into os.environ
 
 mysql = MySQL()  # Not bound to any app yet
 accepted_uid = None
@@ -12,7 +15,7 @@ with open(_questions_path, 'r', encoding='utf-8') as f:
 
 def create_app(test_config=None):
     app = Flask(__name__)
-    app.secret_key = 'your_secret_key_here'
+    app.secret_key = os.getenv('SECRET_KEY', 'fallback_dev_secret')
 
     # Default config
     app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST', '127.0.0.1')
