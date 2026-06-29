@@ -283,6 +283,46 @@ button:disabled {
     width: 120px;
     text-align: center;
 }
+/* ── Game-over action overlay ── */
+.gameover-overlay {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 18px;
+    animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.gameover-btn {
+    padding: 12px 26px;
+    font-size: 17px;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    letter-spacing: 0.5px;
+}
+
+.gameover-btn:hover {
+    transform: scale(1.07);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.restart-btn {
+    background: linear-gradient(90deg, #ffbb00 0%, #ffd700 50%, #ffbb00 100%);
+    color: #1a0030;
+}
+
+.exit-btn {
+    background: linear-gradient(90deg, #c0002a 0%, #e63950 50%, #c0002a 100%);
+    color: #ffffff;
+}
+
 .top-bar {
     width: 100%;
     height: 60px; /* Adjust height for a thicker bar */
@@ -347,6 +387,41 @@ button:disabled {
 .prize.won {
     background-color: #390F4E;
     color: green;
+}
+
+/* Milestone / safe-haven rows */
+.prize.milestone {
+    background: linear-gradient(90deg, #7a3a00 0%, #c46200 50%, #7a3a00 100%);
+    color: #FFD700;
+    font-weight: bold;
+    border-left: 3px solid #FFD700;
+    border-right: 3px solid #FFD700;
+    padding-left: 6px;
+    padding-right: 6px;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(255, 165, 0, 0.5);
+    letter-spacing: 0.5px;
+    position: relative;
+}
+
+.prize.milestone::before {
+    content: "🛡";
+    font-size: 12px;
+    margin-right: 4px;
+}
+
+/* When a milestone is the active question */
+.prize.milestone.active {
+    background: linear-gradient(90deg, #a35200 0%, #ff8c00 50%, #a35200 100%);
+    color: #fff;
+    box-shadow: 0 0 14px rgba(255, 140, 0, 0.85), 0 0 4px #fff;
+}
+
+/* When a milestone is already won */
+.prize.milestone.won {
+    background: linear-gradient(90deg, #1a5200 0%, #28a745 50%, #1a5200 100%);
+    color: #afffaf;
+    box-shadow: 0 0 8px rgba(40, 167, 69, 0.5);
 }
 .custom-dialog {
     position: absolute;

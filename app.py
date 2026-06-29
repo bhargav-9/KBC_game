@@ -5,6 +5,11 @@ import uuid, os, json
 mysql = MySQL()  # Not bound to any app yet
 accepted_uid = None
 
+# Load questions from JSON file
+_questions_path = os.path.join(os.path.dirname(__file__), 'questions.json')
+with open(_questions_path, 'r', encoding='utf-8') as f:
+    questions = json.load(f)
+
 def create_app(test_config=None):
     app = Flask(__name__)
     app.secret_key = 'your_secret_key_here'
@@ -133,7 +138,12 @@ def create_app(test_config=None):
     
     @app.route("/get_all_questions")
     def get_all_questions():
-        return jsonify(questions)
+        import random
+        q = questions[:]
+        if request.args.get('shuffle') == '1':
+            random.shuffle(q)
+        return jsonify(q)
+
     
     @app.route('/check_game_status/<uid>')
     def check_game_status(uid):

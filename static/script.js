@@ -7,6 +7,7 @@ let currentPrizeIndex = 14; // Start from the bottom (1,000)
 let questions = [];
 let cur = 0;
 let safe = '0';
+let isRestart = false; // flag so restart fetches shuffled questions
 // let flip = 0;
 // Lifeline usage tracking
 let lifelinesUsed = {
@@ -22,7 +23,8 @@ window.onload = function () {
 };
 
 function fetchQuestions() {
-  fetch('/get_all_questions')
+  const url = isRestart ? '/get_all_questions?shuffle=1' : '/get_all_questions';
+  fetch(url)
     .then(response => response.json())
     .then(data => {
       questions = data;
@@ -124,16 +126,11 @@ function fetchQuestions() {
 
 function loadQuestion() {
   if (currentPrizeIndex < 0) {
-    document.getElementById("question").innerText = "Congratulations! You won 1 Crore !!";
-    document.getElementById("options").innerHTML = "";
-    clearInterval(timer);
+    showGameOver("🏆 Congratulations! You won ₹1 Crore!!");
     return;
   }
   if (questionIndex >= questions.length) {
-    document.getElementById("question").innerText =
-      "Congratulations! You completed the game!";
-    document.getElementById("options").innerHTML = "";
-    clearInterval(timer);
+    showGameOver("🎉 Congratulations! You completed the game!");
     return;
   }
   idx = questionIndex;
@@ -199,7 +196,7 @@ function lockAnswer() {
     }
     // Move to next question after a delay
     setTimeout(() => {
-      questionIndex++;
+      questionIndex += 7;
       currentPrizeIndex--;
       loadQuestion();
     }, 1000);
@@ -208,24 +205,10 @@ function lockAnswer() {
 
     // Show game over after a delay
     setTimeout(() => {
-      if (safe == '0') {
-        document.getElementById("question").innerText = `Wrong answer! Game Over!\nYou have won nothing`;
-        document.getElementById("options").innerHTML = "";
-        clearInterval(timer);
-        disableAllButtons();
-        disableAllLifelines();
-        return;
-      }
-      else {
-        document.getElementById("question").innerText = `Wrong answer! Game Over!\nYou have won : ${safe}`;
-        document.getElementById("options").innerHTML = "";
-        clearInterval(timer);
-        disableAllButtons();
-        disableAllLifelines();
-        return;
-        // alert(`Wrong answer! Game Over!\nYou have own : ${safe}`);
-      }
-      // resetGame();
+      const msg = safe == '0'
+        ? `Wrong answer! Game Over!\nYou have won nothing`
+        : `Wrong answer! Game Over!\nYou have won : ₹${safe}`;
+      showGameOver(msg);
     }, 1500);
   }
 }
@@ -236,15 +219,9 @@ function quitGame() {
 
   document.getElementById("confirmQuit").addEventListener("click", () => {
     dialog.close();
-
-    // Display the quit message
-    document.getElementById("question").innerText = `Game Over!\nYou have won: ${cur}`;
-    document.getElementById("options").innerHTML = "";
-
-    // Disable all buttons
-    disableAllButtons();
-    disableAllLifelines();
     clearInterval(timer);
+    const msg = cur > 0 ? `You quit!\nYou have won: ₹${cur}` : `You quit!\nYou have won nothing`;
+    showGameOver(msg);
   });
 
   document.getElementById("cancelQuit").addEventListener("click", () => {
@@ -276,6 +253,7 @@ function enableAllLifelines() {
 }
 
 function resetGame() {
+  isRestart = true; // fetch a fresh shuffled set
   questionIndex = 0;
   selectedOption = null;
   timeLeft = 45;
@@ -299,7 +277,33 @@ function resetGame() {
     lifeline.classList.remove("used");
   });
 
-  loadQuestion();
+  // Remove post-game overlay if present
+  const overlay = document.getElementById("gameOverOverlay");
+  if (overlay) overlay.remove();
+
+  fetchQuestions();
+}
+
+// Show game-over message with Restart / Exit buttons
+function showGameOver(message) {
+  document.getElementById("question").innerText = message;
+  document.getElementById("options").innerHTML = "";
+  clearInterval(timer);
+  disableAllButtons();
+  disableAllLifelines();
+
+  // Remove existing overlay if any
+  const existing = document.getElementById("gameOverOverlay");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "gameOverOverlay";
+  overlay.className = "gameover-overlay";
+  overlay.innerHTML = `
+    <button class="gameover-btn restart-btn" onclick="resetGame()">🔄 Restart</button>
+    <button class="gameover-btn exit-btn" onclick="window.location.href='/logout'">🚪 Exit to Login</button>
+  `;
+  document.querySelector(".buttons-container").appendChild(overlay);
 }
 
 // Function to enable all buttons
@@ -322,22 +326,10 @@ function resetTimer() {
 
     if (timeLeft <= 1) {
       setTimeout(() => {
-        if (safe == '0') {
-          document.getElementById("question").innerText = `Time UP! Game Over!\nYou have won nothing`;
-          document.getElementById("options").innerHTML = "";
-          clearInterval(timer);
-          disableAllButtons();
-          disableAllLifelines();
-          return;
-        }
-        else {
-          document.getElementById("question").innerText = `Time UP! Game Over!\nYou have won : ${safe}`;
-          document.getElementById("options").innerHTML = "";
-          clearInterval(timer);
-          disableAllButtons();
-          disableAllLifelines();
-          return;
-        }
+        const msg = safe == '0'
+          ? `Time UP! Game Over!\nYou have won nothing`
+          : `Time UP! Game Over!\nYou have won : ₹${safe}`;
+        showGameOver(msg);
       }, 1500);
     }
   }, 1000);
